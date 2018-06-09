@@ -1,0 +1,459 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>OVapi TreFoil</title>
+    <script language="javascript" type="text/javascript" src="js/zepto.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/iaWidget.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.quickfit.js"></script>
+    <style>
+
+        @font-face {
+            font-family: ArialBold ;
+            src: url('fonts/MyriadPro-Bold.otf');
+        }
+
+        @font-face {
+            font-family: Arial ;
+            src: url('fonts/MyriadPro-Light.otf');
+        }
+
+        body {
+            height: 1080px;
+            width: 1920px;
+            color: #183989;
+            margin: 0;
+            background-color: #ffffff;
+        }
+
+        #header {
+            top: 46px;
+            left: 46px;
+            position: absolute;
+            height: 126px;
+            width: 1822px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+
+        }
+
+        #currentTime {
+            position: absolute;
+            left: 60px;
+            top: 40px;
+            font-size: 40px;
+            font-family: Arial;
+            color: #323132;
+        }
+
+        .header-hour {
+            margin-right: -7px;
+        }
+
+        .header-minutes {
+            margin-left: -7px;
+        }
+
+        .stop {
+            width: 100%;
+            margin-left: 480px;
+            font-size: 68px;
+            color: #183989;
+            padding-top: 100px;
+            font-family: ArialBold;
+        }
+
+        .text {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        #roster {
+            position: absolute;
+            top: 200px;
+            width: 1824px;
+            height: 854px;
+
+        }
+        .row0{
+            margin-top: 33px;
+        }
+
+        .row {
+            width: 1823px;
+            height: 112px;
+            left: 46px;
+            position: relative;
+            display: table;
+            visibility: hidden;
+        }
+        .table-header{
+            margin-left: 168px;
+            font-size: 41px;
+            font-family: Arial;
+            border-bottom: #000000 solid 2px;
+            height: 64px;
+            width: 1512px;
+            display: none;
+        }
+        .table-header>div{
+            float: left;
+        }
+
+
+        .transportType {
+            /*		margin-left: -10px;
+            */
+            width: 143px;
+            height: 114px;
+            display: table;
+            position: relative;
+            float: left;
+            color: #323132;
+        }
+
+        .transportType img {
+            margin-left: 50px;
+            width: 65px;
+        }
+
+        .lineNumber {
+            min-width: 145px;
+            height: 90px;
+            display: table;
+            position: relative;
+            margin-left: 124px;
+            margin-top: 13px;
+            float: left;
+            font-family: ArialBold;
+            color: #183989;
+            font-size: 45px;
+            text-align: center;
+            background-color: #d9ebf8;
+        }
+
+        .number {
+            position: absolute;
+            top: 27px;
+            left: 0;
+            width: 145px;
+            line-height: 1;
+            height: 1px;
+        }
+
+        .departureTime {
+            display: table;
+            height: 92px;
+            width: 192px;
+            position: relative;
+            float: left;
+            font-family: ArialBold;
+            color: #1d3461;
+            font-size: 43px;
+            margin-top: 12px;
+            margin-left: 15px;
+        }
+
+        .time {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 25px;
+            color: #f8961d;
+        }
+
+        .destination {
+            width: 1040px;
+            display: table;
+            height: 88px;
+            position: relative;
+            float: left;
+            margin-left: 25px;
+            font-family: Arial;
+            font-size: 50px;
+            margin-top: 13px;
+            border-bottom:#1d3461 solid 2px;
+        }
+
+        .delay {
+            display: block;
+            height: 58px;
+            width: 58px;
+            border-radius: 100%;
+            position: absolute;
+            float: left;
+            color: #323132;
+            font-family: Arial;
+            z-index: 2;
+            left: 1653px;
+            top: 26px;
+            background-color: #183989;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .minutes {
+            display: block;
+            position: absolute;
+            color: #fff;
+            font-size: 30px;
+            top: 16px;
+            width: 58px;
+            line-height: 1;
+        }
+
+        .border {
+            border-bottom: #000000 solid 1px;
+        }
+
+        #progressbar {
+            position: absolute;
+            top: 990px;
+            left: 255px;
+            width: 1548px;
+            height: 22px;
+            z-index: 1;
+            display: none;
+        }
+        #logo{
+            position: absolute;
+            width: 300px;
+            top: 850px;
+            left: 40px;
+        }
+
+    </style>
+    <script>
+        var conf = adapi.getConfiguration();
+        var stopName = (conf.param["stopName"] ? conf.param["stopName"] : "Overamstel");//07400 09139 //P:10255410:0 //AmsCSY
+        var stopCode = (conf.param["stopCode"] ? conf.param["stopCode"] : "09139");
+        var url = "https://widgets01.cms-ds.com/transcode/handler/getDeparturesOVwidget?stopcode=" + stopCode;
+        var url1 = (conf.param["transcodeurl"] ? conf.param["transcodeurl"] + encodeURIComponent(url) : "https://widgets01.cms-ds.com/transcode/handler/json?url=" + encodeURIComponent(url));
+        var timezone = (conf.param["timezone"] ? conf.param["timezone"] : 'Europe/Amsterdam');
+        var time_url = 'https://ontdek.easyscreen.tv/transcode/gettime?timezone=';
+        var debug = (conf.param["debug"] ? true : false );
+        var version = "v0.1";
+        var starttime = new Date();
+        var timeout = (conf.param["timeout"] ? conf.param["timeout"] : 20);
+        var isXMP = conf.param["SamsungSOC"] ? false : true;
+        var localStorageVar = 'openOV_' + stopCode;
+
+        var daysArray = new Array('Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag');
+        var monthsArray = new Array('januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'october', 'november', 'december');
+
+        function parseIsoDatetime(dtstr) {
+            var dt = dtstr.split(/[: T-]/).map(parseFloat);
+            return new Date(dt[0], dt[1] - 1, dt[2], dt[3] || 0, dt[4] || 0, dt[5] || 0, 0);
+        }
+
+        $(document).ready(function (e) {
+
+            if (debug) $("#debug").append((new Date).getTime() + " version: " + version + "<br>");
+            if (debug) $("#debug").append((new Date).getTime() + " Loading from: " + url + "<br>");
+
+            // var localData = localStorage.getItem(localStorageVar);
+            // if(localData){
+            // 	$("#roster").html(localData);
+            // }
+
+            (function fontsPreload(){
+                var fonts = ["ArialBold","Arial"];
+                var body =  $("body");
+                fonts.forEach(function(el){
+                    body.append("<p class='preload' style='font-size: 1px;font-family:"+el+"'>load</p>")
+                });
+                setTimeout(function(){$(".preload").remove()},100)
+            })();
+
+            $.ajax({
+                type: "GET", url: url,
+                dataType: "json",
+                success: function (data) {
+
+                    var allPassesArr = [];
+                    $.each(data.Passes, function (i, obj) { 			//create new array and push objects to array
+                        obj.TargetArrivalTime = parseIsoDatetime(obj.TargetArrivalTime);
+                        obj.ExpectedArrivalTime = parseIsoDatetime(obj.ExpectedArrivalTime);
+                        allPassesArr.push(obj);
+                    });
+
+                    allPassesArr.sort(function (a, b) {				//sort objects on TargetArrivalTime
+                        return (new Date(a.TargetArrivalTime).getTime()) - (new Date(b.TargetArrivalTime).getTime());
+                    });
+
+                    var arrivingPasses = $.grep(allPassesArr, function (e) { 		//remove passed passes
+                        return e.TripStopStatus != "PASSED";
+                    });
+
+                    $.each(arrivingPasses, function (i, entry) {		//loop through all objects
+
+                        var stop = entry.TimingPointName;
+                        $('.stop').text("Halte " + stop);
+                        if (i < 6) {
+
+                            $('.row' + i).css('visibility', 'visible');
+
+                            var lineNumber = entry.LinePublicNumber;
+                            $(".row" + i + " .lineNumber .number").html(lineNumber).css('width', '144px');
+
+                            if(isXMP){
+                                $('.row' + i+' .minutes').css('top','18px');
+                                $('.row' + i+' .delay').css('top','20px');
+                            }
+
+                            var destination = entry.DestinationName50;
+                            $(".row" + i + " .destination .text").html(destination);
+
+                            var transportType = entry.TransportType;
+                            if (transportType == 'METRO') {
+                                $(".row" + i + " .transportType .text").append('<img src="image/metro.png"/>');
+                            }
+                            if (transportType == 'BUS') {
+                                $(".row" + i + " .transportType .text").append('<img src="image/bus.png"/>');
+                            }
+                            if (transportType == 'TRAIN') {
+                                $(".row" + i + " .transportType .text").append('<img src="image/trein.png"/>');
+                            }
+                            if (transportType == 'TRAM') {
+                                $(".row" + i + " .transportType .text").append('<img src="image/tram.png"/>');
+                            }
+                            if (transportType == 'BOAT') {
+                                $(".row" + i + " .transportType .text").append('<img src="image/boat.png"/>');
+                            }
+
+                            var expectedArrivalTime = entry.ExpectedArrivalTime;
+                            var targetArrivalTime = entry.TargetArrivalTime;
+                            var arrivalTimeHours = new Date(targetArrivalTime).getHours();
+                            var arrivalTimeMinutes = new Date(targetArrivalTime).getMinutes();
+                            // var arrivalTime = new Date(targetArrivalTime).getHours() + ':' + new Date(targetArrivalTime).getMinutes();
+                            if (arrivalTimeHours < 10) {
+                                arrivalTimeHours = '0' + arrivalTimeHours;
+                            }
+                            if (arrivalTimeMinutes < 59) {
+                                arrivalTimeMinutes = arrivalTimeMinutes + 1;
+                                if (arrivalTimeMinutes < 10) {
+                                    arrivalTimeMinutes = '0' + arrivalTimeMinutes;
+                                    console.log(arrivalTimeMinutes)
+                                }
+                            } else {
+                                arrivalTimeMinutes = '00';
+                            }
+                            $(".row" + i + " .departureTime .time").html(arrivalTimeHours + ':' + arrivalTimeMinutes);
+                            var delay = (new Date(expectedArrivalTime).getTime() - new Date(targetArrivalTime).getTime()) / 60000;
+                            delay = Math.round(delay);
+                            if (delay != 0) {
+                                if (delay > 0) {
+                                    $(".row" + i + " .delay .minutes").html('+' + delay).css('background-color', '#183989').show();
+                                }
+                                else {
+                                    $(".row" + i + " .delay .minutes").html(delay).css('background-color', '#183989').show();
+                                }
+                            }
+                            else {
+                                $(".row" + i + " .delay").hide();
+                            }
+                            var numberOfItems = arrivingPasses.length - 1;
+                            //$("#roster .row" + numberOfItems).addClass('border');
+                        }
+                        // localStorage.setItem(localStorageVar, $("#roster").html());
+
+                        //}
+                    });
+                }, error: function () {
+                    if (debug) $("#debug").append((new Date).getTime() + " Error loading<br>");
+                }
+            });
+
+            $.getTime = function (zone, success) {
+                var url = time_url + encodeURIComponent(zone);
+
+                if (debug) $("#debug").append((new Date).getTime() + " Getting time from: " + url + " <br>");
+
+                $.getJSON(url, function (o) {
+                    success && success(new Date(o.datetime), o);
+                });
+            };
+
+            $.getTime(timezone, function (time, timeObject) {
+                if (debug) $("#debug").append((new Date).getTime() + " Got time, showing<br>");
+
+                var hours = timeObject.hour;
+                var minutes = timeObject.minute;
+
+                $('.header-hour').text(hours);
+                $('.header-minutes').text(minutes);
+
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+<div id="widgetData">
+    <div class="stop"></div>
+    <img id="logo" src="Kuijpers-logo.png" alt="">
+</div>
+<div id="roster">
+    <div class="table-header">
+        <div style="margin-right: 128px">lijn</div>
+        <div style="margin-right: 55px">type</div>
+        <div style="margin-right: 840px">bestemming</div>
+        <div>vertrek</div>
+    </div>
+    <div class="row row0">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row1">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row2">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row3">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row4">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row5">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+    <div class="row row6">
+        <div class="lineNumber"><span class="number"></span></div>
+        <div class="transportType"><span class="text"></span></div>
+        <div class="destination"><span class="text"></span></div>
+        <div class="departureTime"><span class="time"></span></div>
+        <div class="delay"><span class="minutes"></span></div>
+    </div>
+
+</div>
+
+</div>
+</body>
+</html>
+
+
+

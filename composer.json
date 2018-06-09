@@ -1,0 +1,31 @@
+{
+    "name": "IvanTatarintsev/freshservice",
+    "type": "library",
+    "description": "PHP client for Freshservice RESTful API",
+    "keywords": [ "freshservice", "api", "php" ],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Ivan",
+            "email": "ivan.tatarintsev@yahoo.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Doozycode\\Freshservice\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Doozycode\\Freshservice\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "vlucas/phpdotenv": "^2.4",
+        "phpunit/phpunit": "^6.5"
+    },
+    "require": {
+        "php": ">=7.0",
+        "guzzlehttp/guzzle": "^6.3"
+    }
+}
