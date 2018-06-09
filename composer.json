@@ -1,5 +1,5 @@
 {
-    "name": "IvanTatarintsev/freshservice",
+    "name": "doozycode/fresdesk-api-client",
     "type": "library",
     "description": "PHP client for Freshservice RESTful API",
     "keywords": [ "freshservice", "api", "php" ],
